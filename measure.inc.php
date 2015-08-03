@@ -599,27 +599,25 @@ class ElectricalMeasurePoint extends MeasurePoint{
 				$values = self::Modbus_Lookup($this, array($this->Register1, $this->Register2, $this->Register3, $this->RegisterEnergy));
 				break;
 		}
-		if($values[0]!=false || $values[1]!=false || $values[2]!=false){
-			$m->Wattage1=intval($values[0] * $this->PowerMultiplier);
+		if(!is_null($values[0]) || !is_null($values[1]) || !is_null($values[2])){
+			$m->Wattage1=@intval($values[0] * $this->PowerMultiplier);
 			$m->Wattage2=@intval($values[1] * $this->PowerMultiplier);
 			$m->Wattage3=@intval($values[2] * $this->PowerMultiplier);
 		}
-		if($values[3] != false) {
+		if(!is_null($values[3])) {
 			$m->Energy=@intval($values[3] * $this->EnergyMultiplier);
-		}
-		else if($values[0]!=false || $values[1]!=false || $values[2]!=false){
+			$m->Date=date("Y-m-d H:i:s");
+			$m->CreateMeasure();
+		}elseif(!is_null($values[0]) || !is_null($values[1]) || !is_null($values[2])){
 			if($lastMeasure->Energy != null) {
 				$values[3] = intval($lastMeasure->Energy + (($m->Wattage1 + $m->Wattage2 + $m->Wattage3) * (strtotime(date("Y-m-d H:i:s")) - strtotime($lastMeasure->Date)) / 3600) / 1000);
 				$m->Energy = intval($values[3] * $this->EnergyMultiplier);
 			} else {
 				$m->Energy=0;
 			}
-		} else {
-			//nothing to record
-			return;
+			$m->Date=date("Y-m-d H:i:s");
+			$m->CreateMeasure();
 		}
-		$m->Date=date("Y-m-d H:i:s");
-		$m->CreateMeasure();
 	}
 }
 
@@ -1424,7 +1422,7 @@ class CoolingMeasurePoint extends MeasurePoint{
 				$values = self::Modbus_Lookup($this, array($this->FanSpeedRegister, $this->CoolingRegister));
 				break;
 		}
-		if($values[0]!=false || $values[1]!=false) {
+		if(!is_null($values[0]) || !is_null($values[1])) {
 			$m->FanSpeed=@intval($values[0]) * floatval($this->FanSpeedMultiplier);
 			$m->Cooling=@intval($values[1]) * floatval($this->CoolingMultiplier);
 
@@ -1989,7 +1987,7 @@ class AirMeasurePoint extends MeasurePoint{
 				$values = self::Modbus_Lookup($this, array($this->TemperatureRegister, $this->HumidityRegister));
 				break;
 		}
-		if($values[0]!=false || $values[1]!=false) {
+		if(!is_null($values[0]) || !is_null($values[1])) {
 			$m->Temperature=@floatval($values[0]) * floatval($this->TemperatureMultiplier);
 			$m->Humidity=@floatval($values[1]) * floatval($this->HumidityMultiplier);
 
